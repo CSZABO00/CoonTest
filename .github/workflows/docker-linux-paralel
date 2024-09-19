@@ -1,0 +1,42 @@
+name: Parallel Docker Builds
+
+on: [push]
+
+jobs:
+  # Job to build the web service
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build web image
+        run: |
+          docker build -t my-app/web:latest -f Dockerfile.web .
+          
+      - name: Push web image to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push my-app/web:latest
+
+  # Job to build the worker service
+  build-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build worker image
+        run: |
+          docker build -t my-app/worker:latest -f Dockerfile.worker .
+          
+      - name: Push worker image to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push my-app/worker:latest
